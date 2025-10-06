@@ -1,0 +1,16 @@
+/* Main styles for the 3D terrain map */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+
+html, body, #map {
+    height: 100%;
+}
+
+/* Map container */
+#map {
+    position: relative;
+}
+

@@ -10,6 +10,21 @@ services:
       testNetwork:
         ipv4_address: 172.28.0.2
 
+  webserver:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: webserver-GL
+    ports:
+      - "8080:80"     # access on localhost:8080
+    volumes:
+      - ./web:/usr/share/nginx/html:ro  # Mount web files for live reloading
+    networks:
+      testNetwork:
+        ipv4_address: 172.28.0.3
+    depends_on:
+      - tileserver
+
 networks:
   testNetwork:
     driver: bridge
