@@ -1,0 +1,25 @@
+{
+  "options": {
+    "paths": {
+      "root": ".",
+      "mbtiles": "mbtiles",
+      "fonts": "styles/fonts",
+      "sprites": "styles"
+    }
+  },
+  "styles": {
+    "local-style": {
+      "style": "styles/style.json",
+      "serve_rendered": true,
+      "tilejson": true
+    }
+  },
+  "data": {
+    "terrain-dem": {
+      "mbtiles": "./terrain.mbtiles"
+    },
+    "osm": {
+      "mbtiles": "./osm.mbtiles"
+    }
+  }
+}

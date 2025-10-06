@@ -1,0 +1,17 @@
+# tile/Dockerfile.tile
+FROM maptiler/tileserver-gl
+
+# Copy config.json
+COPY /tile/config.json /config.json
+
+# Copy styles
+COPY /tile/styles /styles
+
+# Copy mbtiles
+COPY /tile/mbtiles /mbtiles
+
+# Expose port (inside container)
+EXPOSE 8080
+
+# Run tileserver with your config
+CMD ["--config", "/config.json"]
