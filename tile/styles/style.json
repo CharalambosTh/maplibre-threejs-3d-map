@@ -13,7 +13,7 @@
     "openmaptiles": {
       "type": "vector",
       "tiles": [
-        "http://localhost:8082/data/osm/{z}/{x}/{y}.pbf"
+        "http://localhost:8081/data/osm/{z}/{x}/{y}.pbf"
       ],
       "maxzoom": 14,
       "attribution": "&copy; OpenStreetMap Contributors"
@@ -21,7 +21,7 @@
     "terrainSource": {
       "type": "raster-dem",
       "tiles": [
-        "http://localhost:8082/data/terrain-dem/{z}/{x}/{y}.png"
+        "http://localhost:8081/data/terrain-dem/{z}/{x}/{y}.png"
       ],
       "tileSize": 256
     }
