@@ -6,6 +6,10 @@ services:
     container_name: tileserver-GL
     ports:
       - "8081:8080"   # access on localhost:8081
+    volumes:
+      - ./tile/config.json:/config.json:ro           # Mount config file
+      - ./tile/styles:/styles:ro                     # Mount styles directory
+      - ./tile/mbtiles:/mbtiles:ro                   # Mount mbtiles directory
     networks:
       testNetwork:
         ipv4_address: 172.28.0.2

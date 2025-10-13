@@ -5,7 +5,8 @@
       "mbtiles": "mbtiles",
       "fonts": "styles/fonts",
       "sprites": "styles"
-    }
+    },
+    "cors": true
   },
   "styles": {
     "local-style": {
