@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>3D Terrain</title>
-    <meta property="og:description" content="Go beyond hillshade and show elevation in actual 3D." />
+    <title>3D Terrain Map</title>
+    <meta property="og:description" content="MapLibre GL JS 3D terrain map" />
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.css' />
@@ -10,7 +10,18 @@
     <script src='https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.js'></script>
 </head>
 <body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+                "@dvt3d/maplibre-three-plugin": "https://cdn.jsdelivr.net/npm/@dvt3d/maplibre-three-plugin/dist/index.js"
+            }
+        }
+    </script>
+    
     <div id="map"></div>
+    
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
