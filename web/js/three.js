@@ -1,48 +1,38 @@
 import { map } from "./main.js";
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as MTP from '@dvt3d/maplibre-three-plugin';
+import { Drone } from './drone.js';
+import { Navigation } from './navigation.js';
+import { UI } from './ui.js';
+import { initTrail } from './trail.js';
 
-export function init() {
-    //init three scene
-    const mapScene= new MTP.MapScene(map)
+export async function init() {
+    // Initialize 3D scene
+    const mapScene = new MTP.MapScene(map);
+    mapScene.addLight(new THREE.AmbientLight(0xffffff, 0.8));
 
-    //add light
-    mapScene.addLight(new THREE.AmbientLight())
+    // Initialize trail system
+    initTrail(map);
 
-    //add model
-    const glTFLoader= new GLTFLoader();
+    // Create drone instance
+    const drone = new Drone(33.3823, 35.1856, 100);
+    
+    try {
+        // Load drone model
+        await drone.loadModel(mapScene);
+        
+        // Initialize navigation system
+        const navigation = new Navigation(drone, map);
+        
+        // Initialize UI
+        const ui = new UI(drone, navigation, map);
+        
+        console.log("3D map system initialized successfully");
+        
+    } catch (error) {
+        console.error("Failed to load drone model:", error);
+    }
 
-    glTFLoader.load('./js/models/drone.glb', (gltf) => {
-    let rtcGroup = MTP.Creator.createRTCGroup([33.3823, 35.1856,100])
-    gltf.scene.scale.set(10, 10, 10);
-    rtcGroup.add(gltf.scene)
-    mapScene.addObject(rtcGroup)
-    })
-
-    // create button dynamically
-    const btn = document.createElement('button');
-    btn.textContent = "Fly to Drone";
-    btn.style.position = "absolute";
-    btn.style.top = "10px";
-    btn.style.left = "10px";
-    btn.style.zIndex = 10;
-    document.body.appendChild(btn);
-
-    // on click, zoom to the drone location
-    btn.onclick = () => {
-    map.flyTo({
-        center: [33.3823, 35.1856], // [lon, lat]
-        zoom: 19,     // same zoom as in URL
-        pitch: -90,       // look straight down
-        bearing: 0,   // slight rotation for same view
-        speed: 0.8,
-        curve: 1.2
-    });
-    };
-
-    map.on('render', () => {
-        mapScene.render();
-    });
-
+    // Set up render loop
+    map.on('render', () => mapScene.render());
 }
