@@ -59,6 +59,54 @@ export class Drone {
         }
     }
 
+    setHeadingToTarget(targetLon, targetLat) {
+        if (this.rtcGroup) {
+            // Calculate heading using your formula
+            const dx = targetLon - this.longitude;  // East-West difference
+            const dy = targetLat - this.latitude;   // North-South difference
+            
+            // Calculate heading in degrees (-180 to 180)
+            const headingDegrees = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // Convert to radians and set rotation
+            // Try different orientation options - uncomment the one that works:
+            
+            // Option 1: Direct conversion
+            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees);
+            
+            // Option 2: Add 180 degrees (face opposite direction)
+            const headingRadians = THREE.MathUtils.degToRad(headingDegrees + 180);
+            
+            // Option 3: Add 90 degrees
+            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees + 90);
+            
+            // Option 4: Subtract 90 degrees  
+            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees - 90);
+            
+            this.rtcGroup.rotation.y = headingRadians;
+            
+            console.log(`Drone heading set to: ${headingDegrees.toFixed(1)}° (adjusted: ${(headingDegrees + 180).toFixed(1)}°) target: [${targetLon.toFixed(6)}, ${targetLat.toFixed(6)}])`);
+        }
+    }
+
+    /**
+     * Test method to manually set drone orientation for debugging
+     * @param {number} degrees - Angle in degrees to test
+     */
+    testOrientation(degrees) {
+        if (this.rtcGroup) {
+            this.rtcGroup.rotation.y = THREE.MathUtils.degToRad(degrees);
+            console.log(`Drone orientation set to: ${degrees}°`);
+        }
+    }
+
+    get3DPosition() {
+        if (this.rtcGroup) {
+            return this.rtcGroup.position.clone();
+        }
+        return null;
+    }
+
     stopMovement() {
         if (this.move_interval) {
             clearInterval(this.move_interval);

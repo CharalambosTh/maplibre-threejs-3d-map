@@ -8,7 +8,7 @@ const mapConfig = {
     center: [33.3823, 35.1856], // Nicosia, Cyprus coordinates
     pitch: 70,
     hash: true,
-    style: 'http://localhost:8081/styles/local-style/style.json', // Use style from tile server
+    style: 'http://localhost:9999/styles/local-style/style.json', // Use style from tile server
     maxZoom: 20,
     maxPitch: 90,
     canvasContextAttributes: {antialias: true} // Enable antialiasing for potential 3D content
@@ -19,9 +19,13 @@ export function initializeMap() {
     const map = new maplibregl.Map(mapConfig);
     
     // Add controls when map is loaded
-    map.on('load', () => {
+    map.on('load', async () => {
         addMapControls(map);
-        init(); // Initialize Three.js after map is loaded
+        try {
+            await init(); // Initialize Three.js after map is loaded
+        } catch (error) {
+            console.error('Failed to initialize 3D system:', error);
+        }
     });
     
     // Make map available globally for debugging and external access
