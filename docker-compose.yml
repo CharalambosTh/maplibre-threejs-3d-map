@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: webserver-GL
     ports:
-      - "9998:80"     # access on localhost:9998
+      - "9998:80"    
     volumes:
       - ./web:/usr/share/nginx/html:ro  # Mount web files for live reloading
     networks:
