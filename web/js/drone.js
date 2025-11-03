@@ -60,7 +60,7 @@ export class Drone {
                 // // KEY CHANGE: Add the arrow to the RTC Group, NOT the mapScene directly.
                 // // This ensures the arrow is positioned relative to your drone.
                 // this.rtcGroup.add(arrowHelper);
-                // mapScene.addObject(this.rtcGroup);
+                mapScene.addObject(this.rtcGroup);
                 
                 console.log("Drone loaded:", this.toString());
                 resolve(this);

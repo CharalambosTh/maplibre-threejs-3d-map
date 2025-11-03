@@ -21,7 +21,7 @@
     "terrainSource1": {
       "type": "raster-dem",
       "tiles": [
-        "http://localhost:8081/data/terrain-dem/{z}/{x}/{y}.png"
+        "http://localhost:9999/data/terrain-dem/{z}/{x}/{y}.png"
       ],
       "tileSize": 256,
       "maxzoom": 12

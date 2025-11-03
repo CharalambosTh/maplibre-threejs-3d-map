@@ -5,7 +5,7 @@ services:
       dockerfile: tile/Dockerfile.tile
     container_name: tileserver-GL
     ports:
-      - "8081:8080"   # access on localhost:8081
+      - "9999:8080"   # access on localhost:9999
     volumes:
       - ./tile/config.json:/config.json:ro           # Mount config file
       - ./tile/styles:/styles:ro                     # Mount styles directory
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: webserver-GL
     ports:
-      - "8080:80"     # access on localhost:8080
+      - "9998:80"     # access on localhost:9998
     volumes:
       - ./web:/usr/share/nginx/html:ro  # Mount web files for live reloading
     networks:
