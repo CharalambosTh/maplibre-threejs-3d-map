@@ -184,11 +184,8 @@ export class UI {
         }
         
         // Cycle through different orientations to find the correct one
-        const orientations = [0, 90, 180, 270, -90];
-        const currentTime = Date.now();
-        const index = Math.floor(currentTime / 2000) % orientations.length; // Change every 2 seconds
+        const orientations = 90;
         
-        this.drone.testOrientation(orientations[index]);
-        console.log(`Testing orientation: ${orientations[index]}°`);
+        this.drone.testOrientation(orientations);
     }
 }

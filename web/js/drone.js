@@ -32,14 +32,39 @@ export class Drone {
         return new Promise((resolve, reject) => {
             const loader = new GLTFLoader();
             loader.load('./js/models/drone.glb', (gltf) => {
+                // Create the group that will be managed by the map plugin
                 this.rtcGroup = MTP.Creator.createRTCGroup(this.getPosition());
+
+                // --- Setup the drone model ---
                 this.model = gltf.scene;
-                this.model.scale.set(10, 10, 10);
+                this.model.scale.set(15, 15, 15);
+                
+                // For this test, ensure the model starts at the group's center with no rotation
                 this.model.position.set(0, 0, 0);
+             
+                // Add the drone model to the group
                 this.rtcGroup.add(this.model);
-                mapScene.addObject(this.rtcGroup);
+
+                // Arrow Debugging
+                // // Define the "forward" vector in three.js (positive Z)
+                // const forwardDirection = new THREE.Vector3(0, 0, 1);
+
+                // // The arrow starts at the group's origin
+                // const origin = new THREE.Vector3(0, 0, 0);
+
+                // // NOTE: Increased arrow length to be visible against your scaled-up model
+                // const arrowLength = 30; 
+                // const arrowColor = 0xff0000; // Red
+                // const arrowHelper = new THREE.ArrowHelper(forwardDirection, origin, arrowLength, arrowColor);
+
+                // // KEY CHANGE: Add the arrow to the RTC Group, NOT the mapScene directly.
+                // // This ensures the arrow is positioned relative to your drone.
+                // this.rtcGroup.add(arrowHelper);
+                // mapScene.addObject(this.rtcGroup);
+                
                 console.log("Drone loaded:", this.toString());
                 resolve(this);
+
             }, undefined, reject);
         });
     }
@@ -61,31 +86,14 @@ export class Drone {
 
     setHeadingToTarget(targetLon, targetLat) {
         if (this.rtcGroup) {
-            // Calculate heading using your formula
-            const dx = targetLon - this.longitude;  // East-West difference
-            const dy = targetLat - this.latitude;   // North-South difference
+            // Calculate difference
+            const dx = targetLon - this.longitude;  // East-West difference (X-axis)
+            const dy = targetLat - this.latitude;   // North-South difference (Z-axis)
             
-            // Calculate heading in degrees (-180 to 180)
-            const headingDegrees = Math.atan2(dy, dx) * (180 / Math.PI);
-            
-            // Convert to radians and set rotation
-            // Try different orientation options - uncomment the one that works:
-            
-            // Option 1: Direct conversion
-            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees);
-            
-            // Option 2: Add 180 degrees (face opposite direction)
-            const headingRadians = THREE.MathUtils.degToRad(headingDegrees + 180);
-            
-            // Option 3: Add 90 degrees
-            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees + 90);
-            
-            // Option 4: Subtract 90 degrees  
-            // const headingRadians = THREE.MathUtils.degToRad(headingDegrees - 90);
-            
+            const headingRadians = Math.atan2(dx, dy) + Math.PI; // Add PI for offset correction 
             this.rtcGroup.rotation.y = headingRadians;
             
-            console.log(`Drone heading set to: ${headingDegrees.toFixed(1)}° (adjusted: ${(headingDegrees + 180).toFixed(1)}°) target: [${targetLon.toFixed(6)}, ${targetLat.toFixed(6)}])`);
+            console.log(`Drone heading set to: ${(headingRadians * 180 / Math.PI).toFixed(1)}°`);
         }
     }
 
@@ -95,8 +103,8 @@ export class Drone {
      */
     testOrientation(degrees) {
         if (this.rtcGroup) {
-            this.rtcGroup.rotation.y = THREE.MathUtils.degToRad(degrees);
-            console.log(`Drone orientation set to: ${degrees}°`);
+            this.rtcGroup.rotation.y += THREE.MathUtils.degToRad(degrees);
+            console.log(`Drone orientation set to: ${this.rtcGroup.rotation.y}°`);
         }
     }
 
