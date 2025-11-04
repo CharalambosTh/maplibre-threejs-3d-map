@@ -1,6 +1,7 @@
 // Map configuration and initialization
 import { addMapControls } from './controls.js';
 import { init } from './three.js';
+
 // Map configuration object
 const mapConfig = {
     container: 'map',
@@ -13,6 +14,9 @@ const mapConfig = {
     maxPitch: 90,
     canvasContextAttributes: {antialias: true} // Enable antialiasing for potential 3D content
 };
+export const deckOverlay = new MapboxOverlay({
+    layers: []
+});
 
 // Initialize and export the map
 export function initializeMap() {
@@ -31,8 +35,10 @@ export function initializeMap() {
     // Make map available globally for debugging and external access
     window.map = map;
     
+    map.addControl(deckOverlay);
+
     return map;
 }
 
-// Auto-initialize when module loads
 export const map = initializeMap();
+

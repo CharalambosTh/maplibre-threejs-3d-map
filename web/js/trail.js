@@ -1,153 +1,94 @@
 /**
  * Deck.gl-based 3D trail system for drone path visualization
- * Compatible with MapLibre GL JS using the MapboxLayer bridge
+ * Compatible with MapLibre GL JS using the MapboxOverlay pattern
  */
-
+import { deckOverlay } from './main.js';
 let mapInstance = null;
-let isTrailVisible = true;
-
-/**
- * Get deck.gl classes safely after they're loaded
- */
-function getDeckGLClasses() {
-    if (typeof deck === 'undefined') {
-        throw new Error('deck.gl not loaded. Make sure deck.gl script is included before this module.');
-    }
-    return {
-        MapboxLayer: deck.MapboxLayer,
-        LineLayer: deck.LineLayer
-    };
-}
+let globalIsTrailVisible = true; // Use a global visibility flag
 
 /**
  * Trail manager class for handling deck.gl line layers
  */
 export class TrailManager {
     constructor() {
-        /** @type {Map<string, DroneTrail>} */
         this.droneTrails = new Map();
     }
 
-    /**
-     * Create a new trail for a drone
-     * @param {string} droneId - Unique identifier for the drone
-     * @param {import('maplibre-gl').Map} map - MapLibre map instance
-     */
     createTrailForDrone(droneId, map) {
         const trail = new DroneTrail(droneId, map);
         this.droneTrails.set(droneId, trail);
         return trail;
     }
 
-    /**
-     * Get trail for a specific drone
-     * @param {string} droneId - Drone identifier
-     * @returns {DroneTrail|null}
-     */
     getTrail(droneId) {
         return this.droneTrails.get(droneId) || null;
     }
 
-    /**
-     * Remove trail for a drone
-     * @param {string} droneId - Drone identifier
-     */
     removeTrail(droneId) {
-        const trail = this.droneTrails.get(droneId);
-        if (trail) {
-            trail.destroy();
+        if (this.droneTrails.has(droneId)) {
             this.droneTrails.delete(droneId);
+            this.updateAllLayers(); // Trigger a redraw to remove the layer
         }
     }
 
-    /**
-     * Clear all trails
-     */
     clearAllTrails() {
         for (const trail of this.droneTrails.values()) {
-            trail.clear();
+            trail.clear(); // This will trigger one update, which is fine
         }
     }
 
-    /**
-     * Toggle visibility of all trails
-     * @returns {boolean} New visibility state
-     */
     toggleAllTrailsVisibility() {
-        isTrailVisible = !isTrailVisible;
-        for (const trail of this.droneTrails.values()) {
-            trail.setVisibility(isTrailVisible);
+        globalIsTrailVisible = !globalIsTrailVisible;
+        this.updateAllLayers(); // Just trigger a single global update
+        return globalIsTrailVisible;
+    }
+
+    updateAllLayers() {
+        const layers = [];
+
+        // Only add layers if they are globally visible
+        if (globalIsTrailVisible) {
+            for (const trail of this.droneTrails.values()) {
+                layers.push(
+                    new LineLayer({
+                        id: trail.layerId,
+                        data: trail.getPathSegments(),
+                        getSourcePosition: d => d.source,
+                        getTargetPosition: d => d.dest,
+                        getColor: d => d.color,
+                        getWidth: d => d.width,
+                        widthMinPixels: 2,
+                        widthMaxPixels: 8
+                    })
+                );
+            }
         }
-        return isTrailVisible;
+        console.log('About to set props. Layers array:', layers);
+        // debugger; // This will pause execution in your browser's dev tools
+
+        deckOverlay.setProps({ layers: layers });
     }
 }
 
 /**
- * Individual drone trail handler
+ * Individual drone trail handler.
+ * Now it's just a data manager.
  */
 export class DroneTrail {
-    /**
-     * @param {string} droneId - Unique drone identifier
-     * @param {import('maplibre-gl').Map} map - MapLibre map instance
-     */
     constructor(droneId, map) {
         this.droneId = droneId;
         this.map = map;
         this.layerId = `drone-trail-${droneId}`;
-        
-        /** @type {Array<{source: [number, number, number], dest: [number, number, number], color: [number, number, number], velocity?: number}>} */
         this.pathSegments = [];
-        
-        this.layer = this.createLineLayer();
-        this.map.addLayer(this.layer);
-        
-        console.log(`Deck.gl trail created for drone: ${droneId}`);
+        console.log(`DroneTrail data handler created for: ${droneId}`);
     }
 
-    /**
-     * Create the deck.gl LineLayer
-     * @returns {MapboxLayer}
-     */
-    createLineLayer() {
-        const { MapboxLayer, LineLayer } = getDeckGLClasses();
-        
-        return new MapboxLayer({
-            id: this.layerId,
-            type: LineLayer,
-            data: [],
-            getSourcePosition: d => d.source,
-            getTargetPosition: d => d.dest,
-            getColor: d => d.color || [0, 255, 0], // Default green
-            getWidth: d => d.width || 3,
-            widthMinPixels: 2,
-            widthMaxPixels: 8,
-            parameters: {
-                depthTest: true,
-                depthWrite: true
-            },
-            // Enhanced 3D rendering properties
-            opacity: 0.9,
-            pickable: false,
-            autoHighlight: false,
-            highlightColor: [255, 255, 255, 100]
-        });
-    }
-
-    /**
-     * Add a new path segment to the trail
-     * @param {[number, number, number]} fromPosition - [longitude, latitude, altitude]
-     * @param {[number, number, number]} toPosition - [longitude, latitude, altitude]
-     * @param {number} velocity - Optional velocity for color coding
-     */
     addPathSegment(fromPosition, toPosition, velocity = 0) {
-        // Skip if positions are too close (less than ~1 meter)
         if (this.calculateDistance(fromPosition, toPosition) < 0.000009) {
             return;
         }
-
         const color = this.getColorByVelocity(velocity);
         const width = this.getWidthByAltitude(toPosition[2]);
-
         const segment = {
             source: [...fromPosition],
             dest: [...toPosition],
@@ -155,26 +96,17 @@ export class DroneTrail {
             width: width,
             velocity: velocity
         };
-
         this.pathSegments.push(segment);
-
-        // Limit trail length for performance (keep last 300 segments)
         if (this.pathSegments.length > 300) {
             this.pathSegments.shift();
         }
-
-        this.updateLayer();
+        trailManager.updateAllLayers();
     }
-
-    /**
-     * Update the deck.gl layer with current path data
-     */
-    updateLayer() {
-        if (this.layer && this.pathSegments.length > 0) {
-            this.layer.setProps({
-                data: [...this.pathSegments] // Create a copy to ensure deck.gl detects the change
-            });
-        }
+  
+  
+    destroy() {
+        this.pathSegments = [];
+        console.log(`Trail data destroyed for drone: ${this.droneId}`);
     }
 
     /**
@@ -212,26 +144,14 @@ export class DroneTrail {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    /**
-     * Clear the trail path
-     */
+   
     clear() {
         this.pathSegments = [];
-        this.updateLayer();
+        // Tell the manager to redraw everything, which will remove this trail's line
+        trailManager.updateAllLayers();
         console.log(`Trail cleared for drone: ${this.droneId}`);
     }
 
-    /**
-     * Set trail visibility
-     * @param {boolean} visible - Whether trail should be visible
-     */
-    setVisibility(visible) {
-        if (this.layer) {
-            this.layer.setProps({
-                visible: visible
-            });
-        }
-    }
 
     /**
      * Get current path segments
@@ -255,21 +175,6 @@ export class DroneTrail {
                 this.pathSegments.reduce((sum, seg) => sum + (seg.velocity || 0), 0) / this.pathSegments.length : 0
         };
     }
-
-    /**
-     * Remove trail from map and clean up
-     */
-    destroy() {
-        if (this.map && this.layer) {
-            try {
-                this.map.removeLayer(this.layerId);
-                console.log(`Trail layer removed for drone: ${this.droneId}`);
-            } catch (error) {
-                console.warn(`Error removing trail layer: ${error.message}`);
-            }
-        }
-        this.pathSegments = [];
-    }
 }
 
 // Global trail manager instance
@@ -291,6 +196,7 @@ export function initTrail(map) {
  * @param {number} velocity - Velocity for color coding
  */
 export function addTrailPoint(coordinates, altitude = null, velocity = 0) {
+    console.log('addTrailPoint called with:', coordinates); 
     const defaultDroneId = 'default-drone';
     let trail = trailManager.getTrail(defaultDroneId);
     

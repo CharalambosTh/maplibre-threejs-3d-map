@@ -8,8 +8,17 @@
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.css' />
     <link rel='stylesheet' href='css/styles.css' />
     <script src='https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.js'></script>
-    <!-- Load deck.gl UMD bundle for MapLibre compatibility -->
-    <script src="https://unpkg.com/deck.gl@9.0.0/dist.min.js"></script>
+   
+     
+    <script src="https://unpkg.com/deck.gl@^9.0.0/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/layers@^9.0.0/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/mapbox@^9.0.0/dist.min.js"></script>
+
+    <script type="text/javascript">
+      const { MapboxOverlay, LineLayer, GeoJsonLayer } = deck;
+      console.log('Available deck.gl classes:', deck); 
+    </script>
+
 </head>
 <body>
     <script type="importmap">
@@ -18,6 +27,7 @@
                 "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
                 "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
                 "@dvt3d/maplibre-three-plugin": "https://cdn.jsdelivr.net/npm/@dvt3d/maplibre-three-plugin/dist/index.js"
+               
             }
         }
     </script>
