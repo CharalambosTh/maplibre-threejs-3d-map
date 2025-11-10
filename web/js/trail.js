@@ -1,3 +1,4 @@
+import { Matrix4 } from 'https://cdn.jsdelivr.net/npm/math.gl@4.0.0/+esm';
 /**
  * Deck.gl-based 3D trail system for drone path visualization
  * Compatible with MapLibre GL JS using the MapboxOverlay pattern
@@ -46,6 +47,11 @@ export class TrailManager {
     updateAllLayers() {
         const layers = [];
 
+        //130 is the offset to level the line with the drone model
+        const VERTICAL_OFFSET = 130;
+
+        const modelMatrix = new Matrix4().translate([0, 0, VERTICAL_OFFSET]);
+
         // Only add layers if they are globally visible
         if (globalIsTrailVisible) {
             for (const trail of this.droneTrails.values()) {
@@ -53,6 +59,7 @@ export class TrailManager {
                     new LineLayer({
                         id: trail.layerId,
                         data: trail.getPathSegments(),
+                        modelMatrix: modelMatrix,
                         getSourcePosition: d => d.source,
                         getTargetPosition: d => d.dest,
                         getColor: d => d.color,
@@ -201,7 +208,7 @@ export function addTrailPoint(coordinates, altitude = null, velocity = 0) {
     let trail = trailManager.getTrail(defaultDroneId);
     
     if (!trail && mapInstance) {
-        trail = trailManager.createTrailForDrone(defaultDroneId, mapInstance);
+        trail = trailManager.createTrailForDrone(defaultDroneId, mapInstance, altitude);
     }
     
     if (trail) {

@@ -15,7 +15,7 @@ export async function init() {
     initTrail(map);
 
     // Create drone instance
-    const drone = new Drone(33.3823, 35.1856, 100);
+    const drone = new Drone(33.3823, 35.1856, 50);
     
     try {
         // Load drone model

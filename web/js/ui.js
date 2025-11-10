@@ -161,8 +161,8 @@ export class UI {
         }
         
         console.log(`Navigating to target: [${this.targetCoordinates[0].toFixed(6)}, ${this.targetCoordinates[1].toFixed(6)}]`);
-        
-        const targetAlt = 100; // Same altitude
+
+        const targetAlt = this.drone.altitude; // Same altitude
         const stepDist = 2;    // 2 meters per step
         
         this.navigation.moveDroneToward(this.targetCoordinates, targetAlt, stepDist);
